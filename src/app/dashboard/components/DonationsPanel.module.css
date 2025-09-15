@@ -1,0 +1,138 @@
+.donationsPanel {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(10, 49, 10, 0.1);
+}
+
+.headerContent h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #0a310a;
+}
+
+.headerContent .subtitle {
+  margin: 0.25rem 0 0;
+  color: rgba(10, 49, 10, 0.7);
+  font-size: 0.875rem;
+}
+
+.addButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.addButton:hover {
+  background: linear-gradient(135deg, #1d9e4f, #15803d);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+}
+
+.donationsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.loadingState,
+.errorState,
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(34, 197, 94, 0.1);
+  border-top: 3px solid #22c55e;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.errorState svg {
+  margin-bottom: 1rem;
+}
+
+.errorState p {
+  color: #ef4444;
+  font-weight: 500;
+  margin: 0.5rem 0;
+}
+
+.retryButton {
+  padding: 0.5rem 1rem;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-top: 1rem;
+}
+
+.retryButton:hover {
+  background: #dc2626;
+}
+
+.emptyState svg {
+  margin-bottom: 1.5rem;
+  opacity: 0.7;
+}
+
+.emptyState h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  color: #0a310a;
+}
+
+.emptyState p {
+  margin: 0 0 2rem;
+  color: rgba(10, 49, 10, 0.7);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .donationsPanel {
+    padding: 1rem;
+  }
+  
+  .panelHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .donationsGrid {
+    grid-template-columns: 1fr;
+  }
+}
