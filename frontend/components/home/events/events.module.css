@@ -1,0 +1,525 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
+/* ==========================
+   Animation Keyframes
+========================== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ==========================
+   Animation Classes
+========================== */
+.animated {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+.containerAnimated {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.leftAnimated {
+  opacity: 1 !important;
+  transform: translateX(0) !important;
+  animation: fadeInLeft 0.8s ease-out 0.2s forwards;
+}
+
+.imageAnimated {
+  opacity: 1 !important;
+  transform: scale(1) !important;
+  animation: scaleIn 0.6s ease-out 0.4s forwards;
+}
+
+.contentAnimated {
+  animation: fadeInUp 0.6s ease-out 0.6s forwards;
+}
+
+.middleAnimated {
+  animation: fadeInUp 0.8s ease-out 0.3s forwards;
+}
+
+.rightAnimated {
+  opacity: 1 !important;
+  transform: translateX(0) !important;
+  animation: fadeInRight 0.8s ease-out 0.2s forwards;
+}
+
+.dateBoxAnimated {
+  animation: bounceIn 0.6s ease-out forwards;
+}
+
+.listItemAnimated {
+  animation: slideInFromBottom 0.6s ease-out forwards;
+}
+
+.buttonAnimated {
+  animation: fadeInUp 0.6s ease-out 1s forwards;
+}
+
+/* Staggered animations for date boxes and list items */
+.dateBox:nth-child(1).dateBoxAnimated { animation-delay: 0.5s; }
+.dateBox:nth-child(2).dateBoxAnimated { animation-delay: 0.7s; }
+.dateBox:nth-child(3).dateBoxAnimated { animation-delay: 0.9s; }
+.dateBox:nth-child(4).dateBoxAnimated { animation-delay: 1.1s; }
+
+.eventListItem:nth-child(1).listItemAnimated { animation-delay: 0.6s; }
+.eventListItem:nth-child(2).listItemAnimated { animation-delay: 0.8s; }
+.eventListItem:nth-child(3).listItemAnimated { animation-delay: 1.0s; }
+.eventListItem:nth-child(4).listItemAnimated { animation-delay: 1.2s; }
+
+.eventsSection {
+  font-family: 'Montserrat', sans-serif;
+  background-color: rgba(10, 49, 10, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4rem 1rem;
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.8s ease-out;
+}
+
+/* Keep section always visible - only animate children */
+.eventsSection.animated {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+.eventsContainer {
+  display: flex;
+  min-height: 500px;
+  font-family: 'Montserrat', sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.6s ease-out;
+}
+
+.eventsContainer.containerAnimated {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+
+/* Left Section */
+.leftSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-right: 1.5rem;
+  opacity: 1;
+  transform: translateX(0);
+  transition: all 0.8s ease-out;
+}
+
+.leftSection.leftAnimated {
+  opacity: 1 !important;
+  transform: translateX(0) !important;
+}
+
+.eventImage {
+  position: relative;
+  height: 250px;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 1.25rem;
+  opacity: 1;
+  transform: scale(1);
+  transition: all 0.6s ease-out;
+}
+
+.eventImage.imageAnimated {
+  opacity: 1 !important;
+  transform: scale(1) !important;
+}
+
+.eventImageWithBackground {
+  position: relative;
+  height: 250px;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: 1rem;
+}
+
+.imageOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(10, 49, 10, 0.1), rgba(10, 49, 10, 0.6));
+}
+
+.eventCategory {
+  position: relative;
+  background-color: rgba(255, 255, 255, 0.15);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  color: white;
+  padding: 0.4rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.eventContent {
+  padding: 1.5rem;
+  flex: 1;
+  background-color: rgba(255, 255, 255, 0.2);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  color: white;
+}
+
+.eventTitle {
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, #22c55e 0%, #f87171 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.eventDescription {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgba(10, 49, 10, 0.8);
+  margin-bottom: 1rem;
+}
+
+.eventShortDescription {
+  font-size: 0.875rem;
+  color: rgba(10, 49, 10, 0.65);
+  font-style: italic;
+}
+
+/* Middle Section */
+.middleSection {
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  margin-right: 1.5rem;
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.6s ease-out;
+}
+
+.middleSection.middleAnimated {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+.dateBox {
+  border-radius: 1rem;
+  padding: 1rem 0;
+  text-align: center;
+  border: 1px solid rgba(10, 49, 10, 0.15);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 1rem;
+  color: #0a310a;
+  background-color: #ffffff;
+  opacity: 1;
+  transform: scale(1);
+}
+
+.dateBox.dateBoxAnimated {
+  opacity: 1 !important;
+  transform: scale(1) !important;
+}
+
+.dateBox:hover {
+  background-color: rgba(10, 49, 10, 0.05);
+
+}
+
+.dateBox.activeDate {
+  border: none;
+  background: linear-gradient(90deg, #22c55e 0%, #f87171 100%);
+color: white;
+
+}
+
+.dateDay {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.dateNumber {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.dateMonth {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Right Section */
+.rightSection {
+  background-color: #fff;
+  flex: 1;
+  background-color: #ffffff;
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  opacity: 1;
+  transform: translateX(0);
+  transition: all 0.8s ease-out;
+}
+
+.rightSection.rightAnimated {
+  opacity: 1 !important;
+  transform: translateX(0) !important;
+}
+
+.eventsListTitle {
+  font-size: 1.25rem;
+  margin-bottom: 1.25rem;
+  font-weight: 700;
+  color: #0a310a;
+  border-bottom: 1px solid rgba(10, 49, 10, 0.1);
+  padding-bottom: 0.5rem;
+}
+
+.eventsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.eventListItem {
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(10, 49, 10, 0.07);
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.6s ease-out;
+}
+
+.eventListItem.listItemAnimated {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+.eventListItem:last-child {
+  border-bottom: none;
+}
+
+.eventTime {
+  font-size: 0.85rem;
+  color: #22c55e;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.eventListTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #0a310a;
+}
+
+.viewDetails {
+  font-size: 0.85rem;
+  color: rgba(10, 49, 10, 0.6);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.viewDetails:hover {
+  color: #22c55e;
+  text-decoration: underline;
+}
+
+.viewMoreButton {
+  display: block;
+  width: 100%;
+  padding: 0.75rem;
+  background: transparent;
+  border: 2px solid #0a310a;
+  border-radius: 9999px;
+  color: #0a310a;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1.5rem;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.viewMoreButton.buttonAnimated {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+.viewMoreButton:hover {
+  background: linear-gradient(90deg, #22c55e 0%, #f87171 100%);
+  color: white;
+  border: none;
+}
+
+/* Loading, Error, and Empty States */
+.loadingState, .errorState, .emptyState {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  text-align: center;
+  min-height: 300px;
+  background-color: #ffffff;
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.loadingState p, .errorState p, .emptyState p {
+  color: #666;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.errorState button {
+  background-color: #0a310a;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.errorState button:hover {
+  background-color: #083608;
+}
+
+/* Event details styling */
+.eventDetails {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.eventLocation, .eventTime {
+  margin: 0.5rem 0;
+  color: #666;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .eventsContainer {
+    flex-direction: column;
+    padding: 0 1rem;
+  }
+
+  .leftSection,
+  .middleSection,
+  .rightSection {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 1.5rem;
+  }
+
+  .middleSection {
+    flex-direction: row;
+    justify-content: space-around;
+    width: 100%;
+  }
+
+  .dateBox {
+    flex: 1;
+    margin-right: 0.5rem;
+  }
+
+  .dateBox:last-child {
+    margin-right: 0;
+  }
+}

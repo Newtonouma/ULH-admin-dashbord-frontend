@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:13
+    container_name: universal-lighthouse-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: universal_lighthouse
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - universal-lighthouse-network
+
+  # Application (Optional - for containerized development)
+  app:
+    build: .
+    container_name: universal-lighthouse-app
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_NAME: universal_lighthouse
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - universal-lighthouse-network
+    command: npm run start:dev
+
+volumes:
+  postgres_data:
+
+networks:
+  universal-lighthouse-network:
+    driver: bridge

@@ -1,0 +1,837 @@
+{
+  "info": {
+    "name": "Universal Lighthouse API",
+    "description": "Complete API collection for Universal Lighthouse backend with authentication and CRUD operations",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "universal-lighthouse-api",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    console.log('User registered successfully');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"email\": \"admin@universallighthouse.com\",\n  \"password\": \"AdminPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Register a new admin user"
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('jwt_token', response.access_token);",
+                  "    pm.collectionVariables.set('refresh_token', response.refresh_token);",
+                  "    console.log('JWT Token saved:', response.access_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usernameOrEmail\": \"admin\",\n  \"password\": \"AdminPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login and get JWT token"
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "refresh"]
+            },
+            "description": "Refresh JWT token"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            },
+            "description": "Logout user"
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@universallighthouse.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/forgot-password",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "forgot-password"]
+            },
+            "description": "Request password reset"
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"reset-token-from-email\",\n  \"newPassword\": \"NewPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/reset-password",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "reset-password"]
+            },
+            "description": "Reset password with token"
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"AdminPassword123!\",\n  \"newPassword\": \"NewAdminPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/change-password",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "change-password"]
+            },
+            "description": "Change password for authenticated user"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Causes",
+      "item": [
+        {
+          "name": "Get All Causes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/causes",
+              "host": ["{{base_url}}"],
+              "path": ["causes"]
+            },
+            "description": "Get all causes"
+          }
+        },
+        {
+          "name": "Get Cause by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/causes/:id",
+              "host": ["{{base_url}}"],
+              "path": ["causes", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "cause-id-here"
+                }
+              ]
+            },
+            "description": "Get single cause by ID"
+          }
+        },
+        {
+          "name": "Create Cause",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Clean Water Initiative\",\n  \"goal\": 50000,\n  \"category\": \"Environment\",\n  \"description\": \"Providing clean water access to underserved communities\",\n  \"imageUrl\": \"https://example.com/water-image.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/causes",
+              "host": ["{{base_url}}"],
+              "path": ["causes"]
+            },
+            "description": "Create a new cause"
+          }
+        },
+        {
+          "name": "Update Cause",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Clean Water Initiative\",\n  \"raised\": 15000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/causes/:id",
+              "host": ["{{base_url}}"],
+              "path": ["causes", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "cause-id-here"
+                }
+              ]
+            },
+            "description": "Update an existing cause"
+          }
+        },
+        {
+          "name": "Delete Cause",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/causes/:id",
+              "host": ["{{base_url}}"],
+              "path": ["causes", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "cause-id-here"
+                }
+              ]
+            },
+            "description": "Delete a cause"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Events",
+      "item": [
+        {
+          "name": "Get All Events",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/events",
+              "host": ["{{base_url}}"],
+              "path": ["events"]
+            },
+            "description": "Get all events"
+          }
+        },
+        {
+          "name": "Get Event by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/events/:id",
+              "host": ["{{base_url}}"],
+              "path": ["events", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "event-id-here"
+                }
+              ]
+            },
+            "description": "Get single event by ID"
+          }
+        },
+        {
+          "name": "Create Event",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Charity Gala 2025\",\n  \"description\": \"Annual fundraising gala event\",\n  \"date\": \"2025-03-15T19:00:00.000Z\",\n  \"endTime\": \"2025-03-15T23:00:00.000Z\",\n  \"location\": \"Grand Ballroom, City Center\",\n  \"imageUrl\": \"https://example.com/gala-image.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/events",
+              "host": ["{{base_url}}"],
+              "path": ["events"]
+            },
+            "description": "Create a new event"
+          }
+        },
+        {
+          "name": "Update Event",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Charity Gala 2025\",\n  \"location\": \"Updated venue\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/events/:id",
+              "host": ["{{base_url}}"],
+              "path": ["events", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "event-id-here"
+                }
+              ]
+            },
+            "description": "Update an existing event"
+          }
+        },
+        {
+          "name": "Delete Event",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/events/:id",
+              "host": ["{{base_url}}"],
+              "path": ["events", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "event-id-here"
+                }
+              ]
+            },
+            "description": "Delete an event"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teams",
+      "item": [
+        {
+          "name": "Get All Team Members",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/teams",
+              "host": ["{{base_url}}"],
+              "path": ["teams"]
+            },
+            "description": "Get all team members"
+          }
+        },
+        {
+          "name": "Get Team Member by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/teams/:id",
+              "host": ["{{base_url}}"],
+              "path": ["teams", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "team-member-id-here"
+                }
+              ]
+            },
+            "description": "Get single team member by ID"
+          }
+        },
+        {
+          "name": "Create Team Member",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"position\": \"Executive Director\",\n  \"bio\": \"Passionate about making a difference in the world\",\n  \"imageUrl\": \"https://example.com/john-doe.jpg\",\n  \"socialMedia\": {\n    \"linkedin\": \"https://linkedin.com/in/johndoe\",\n    \"twitter\": \"https://twitter.com/johndoe\"\n  },\n  \"contact\": {\n    \"email\": \"john.doe@universallighthouse.com\",\n    \"phone\": \"+1-555-0123\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/teams",
+              "host": ["{{base_url}}"],
+              "path": ["teams"]
+            },
+            "description": "Create a new team member"
+          }
+        },
+        {
+          "name": "Update Team Member",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"position\": \"Senior Executive Director\",\n  \"bio\": \"Updated bio with more experience\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/teams/:id",
+              "host": ["{{base_url}}"],
+              "path": ["teams", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "team-member-id-here"
+                }
+              ]
+            },
+            "description": "Update an existing team member"
+          }
+        },
+        {
+          "name": "Delete Team Member",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/teams/:id",
+              "host": ["{{base_url}}"],
+              "path": ["teams", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "team-member-id-here"
+                }
+              ]
+            },
+            "description": "Delete a team member"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Gallery",
+      "item": [
+        {
+          "name": "Get All Gallery Items",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/gallery",
+              "host": ["{{base_url}}"],
+              "path": ["gallery"]
+            },
+            "description": "Get all gallery items"
+          }
+        },
+        {
+          "name": "Get Gallery Item by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/gallery/:id",
+              "host": ["{{base_url}}"],
+              "path": ["gallery", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "gallery-item-id-here"
+                }
+              ]
+            },
+            "description": "Get single gallery item by ID"
+          }
+        },
+        {
+          "name": "Create Gallery Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Community Outreach 2024\",\n  \"description\": \"Photos from our community outreach program\",\n  \"imageUrl\": \"https://example.com/outreach-2024.jpg\",\n  \"type\": \"photo\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/gallery",
+              "host": ["{{base_url}}"],
+              "path": ["gallery"]
+            },
+            "description": "Create a new gallery item"
+          }
+        },
+        {
+          "name": "Update Gallery Item",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Community Outreach 2024\",\n  \"description\": \"Updated description\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/gallery/:id",
+              "host": ["{{base_url}}"],
+              "path": ["gallery", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "gallery-item-id-here"
+                }
+              ]
+            },
+            "description": "Update an existing gallery item"
+          }
+        },
+        {
+          "name": "Delete Gallery Item",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/gallery/:id",
+              "host": ["{{base_url}}"],
+              "path": ["gallery", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "gallery-item-id-here"
+                }
+              ]
+            },
+            "description": "Delete a gallery item"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Donations",
+      "item": [
+        {
+          "name": "Get All Donations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/donations",
+              "host": ["{{base_url}}"],
+              "path": ["donations"]
+            },
+            "description": "Get all donations"
+          }
+        },
+        {
+          "name": "Get Donation by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/donations/:id",
+              "host": ["{{base_url}}"],
+              "path": ["donations", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "donation-id-here"
+                }
+              ]
+            },
+            "description": "Get single donation by ID"
+          }
+        },
+        {
+          "name": "Create Donation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 100.00,\n  \"currency\": \"USD\",\n  \"donorEmail\": \"donor@example.com\",\n  \"donorName\": \"Jane Smith\",\n  \"causeId\": \"cause-uuid-here\",\n  \"message\": \"Keep up the great work!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/donations",
+              "host": ["{{base_url}}"],
+              "path": ["donations"]
+            },
+            "description": "Create a new donation"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/health",
+              "host": ["{{base_url}}"],
+              "path": ["api", "health"]
+            },
+            "description": "Check API health status (no authentication required)"
+          }
+        }
+      ]
+    }
+  ]
+}
