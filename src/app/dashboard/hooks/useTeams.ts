@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Team, CreateTeamDto, UpdateTeamDto } from '../../api/teams/types';
+import { TeamMember, CreateTeamDto, UpdateTeamDto } from '../../api/teams/types';
 
 export function useTeams() {
-  const [teams, setTeams] = useState<Team[]>([]);
+  const [teams, setTeams] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

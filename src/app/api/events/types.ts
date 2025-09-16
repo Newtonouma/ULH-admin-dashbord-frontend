@@ -1,6 +1,6 @@
 // Import types from the main types file to maintain consistency
 export type { Event, CreateEventData, UpdateEventData } from '../../../types/index';
-import type { Event, UpdateEventData } from '../../../types/index';
+import type { UpdateEventData } from '../../../types/index';
 
 export function isValidUrl(url: string): boolean {
   try {

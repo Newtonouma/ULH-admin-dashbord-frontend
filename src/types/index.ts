@@ -14,7 +14,7 @@ export interface User {
 
 // Auth related types
 export interface LoginCredentials {
-  email: string;
+  usernameOrEmail: string;
   password: string;
 }
 
@@ -22,12 +22,6 @@ export interface RegisterData {
   username: string;
   email: string;
   password: string;
-}
-
-export interface AuthState {
-  user: User | null;
-  token: string | null;
-  isAuthenticated: boolean;
 }
 
 // Cause types

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Event, CreateEventData } from '../../api/events/types';
+import { Event } from '../../api/events/types';
 import FileInput from '@/components/FileInput';
 import styles from './EventEditor.module.css';
 
