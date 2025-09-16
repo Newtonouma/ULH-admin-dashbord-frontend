@@ -12,6 +12,24 @@ export interface User {
   email: string;
 }
 
+// Auth related types
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface RegisterData {
+  username: string;
+  email: string;
+  password: string;
+}
+
+export interface AuthState {
+  user: User | null;
+  token: string | null;
+  isAuthenticated: boolean;
+}
+
 // Cause types
 export interface Cause extends BaseEntity {
   title: string;
@@ -19,7 +37,7 @@ export interface Cause extends BaseEntity {
   raised?: number;
   category: string;
   description: string;
-  imageUrl: string;
+  imageUrls: string[]; // Changed to array of image URLs
 }
 
 export interface CreateCauseData {
@@ -27,7 +45,7 @@ export interface CreateCauseData {
   goal: number;
   category: string;
   description: string;
-  imageUrl: string;
+  imageUrls: string[]; // Changed to array of image URLs
 }
 
 export interface UpdateCauseData {
@@ -36,7 +54,7 @@ export interface UpdateCauseData {
   raised?: number;
   category?: string;
   description?: string;
-  imageUrl?: string;
+  imageUrls?: string[]; // Changed to array of image URLs
 }
 
 // Event types
@@ -44,27 +62,30 @@ export interface Event extends BaseEntity {
   title: string;
   description: string;
   date: string;
-  endTime?: string;
+  startTime: string;
+  endTime: string;
   location: string;
-  imageUrl?: string;
+  imageUrls: string[]; // Array of image URLs
 }
 
 export interface CreateEventData {
   title: string;
   description: string;
   date: string;
-  endTime?: string;
+  startTime: string;
+  endTime: string;
   location: string;
-  imageUrl?: string;
+  imageUrls?: string[]; // Array of image URLs
 }
 
 export interface UpdateEventData {
   title?: string;
   description?: string;
   date?: string;
+  startTime?: string;
   endTime?: string;
   location?: string;
-  imageUrl?: string;
+  imageUrls?: string[]; // Array of image URLs
 }
 
 // Team Member types
@@ -72,7 +93,7 @@ export interface TeamMember extends BaseEntity {
   name: string;
   position: string;
   bio: string;
-  imageUrl: string;
+  imageUrls: string[]; // Changed to array of image URLs
   socialMedia?: {
     linkedin?: string;
     twitter?: string;
@@ -89,7 +110,7 @@ export interface CreateTeamMemberData {
   name: string;
   position: string;
   bio: string;
-  imageUrl: string;
+  imageUrls: string[]; // Changed to array of image URLs
   socialMedia?: {
     linkedin?: string;
     twitter?: string;
@@ -106,7 +127,7 @@ export interface UpdateTeamMemberData {
   name?: string;
   position?: string;
   bio?: string;
-  imageUrl?: string;
+  imageUrls?: string[]; // Changed to array of image URLs
   socialMedia?: {
     linkedin?: string;
     twitter?: string;
@@ -123,21 +144,21 @@ export interface UpdateTeamMemberData {
 export interface GalleryItem extends BaseEntity {
   title: string;
   description: string;
-  imageUrl: string;
+  imageUrls: string[]; // Changed to array of image URLs
   type: 'photo' | 'video';
 }
 
 export interface CreateGalleryItemData {
   title: string;
   description: string;
-  imageUrl: string;
+  imageUrls: string[]; // Changed to array of image URLs
   type: 'photo' | 'video';
 }
 
 export interface UpdateGalleryItemData {
   title?: string;
   description?: string;
-  imageUrl?: string;
+  imageUrls?: string[]; // Changed to array of image URLs
   type?: 'photo' | 'video';
 }
 
@@ -191,7 +212,7 @@ export interface CauseFormData {
   goal: string; // String for form input, converted to number
   category: string;
   description: string;
-  imageUrl: string;
+  images: File[]; // Changed to File array for form uploads
 }
 
 export interface EventFormData {

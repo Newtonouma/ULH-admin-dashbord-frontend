@@ -13,15 +13,20 @@ interface CauseCardProps {
 export default function CauseCard({ cause, onEdit, onDelete }: CauseCardProps) {
   return (
     <div className={styles.card}>
-      {cause.imageUrl && (
+      {cause.imageUrls && cause.imageUrls.length > 0 && (
         <div className={styles.imageContainer}>
           <Image
-            src={cause.imageUrl}
+            src={cause.imageUrls[0]} // Show first image as primary
             alt={`${cause.title} image`}
             width={400}
             height={200}
             className={styles.cardImage}
           />
+          {cause.imageUrls.length > 1 && (
+            <div className={styles.imageCount}>
+              +{cause.imageUrls.length - 1} more
+            </div>
+          )}
         </div>
       )}
       <div className={styles.cardContent}>

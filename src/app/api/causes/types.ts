@@ -1,10 +1,2 @@
-export interface Cause {
-  id?: string;
-  title: string;
-  goal: number;
-  category: string;
-  description: string;
-  imageUrl: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
+// Import types from the main types file to maintain consistency
+export type { Cause, CreateCauseData, UpdateCauseData } from '../../../types/index';

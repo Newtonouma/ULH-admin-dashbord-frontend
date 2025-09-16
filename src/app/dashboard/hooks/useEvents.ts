@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { EventsApi } from '../../../services/api';
-import { Event, CreateEventData, UpdateEventData } from '../../../types';
+import { apiClient } from '../../../lib/api-client';
+import { Event } from '../../../types';
 
 export function useEvents() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -11,7 +11,7 @@ export function useEvents() {
     try {
       setLoading(true);
       setError(null);
-      const data = await EventsApi.getAll();
+      const data = await apiClient.get<Event[]>('/events');
       setEvents(data);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch events';
@@ -22,50 +22,63 @@ export function useEvents() {
     }
   };
 
-  const createEvent = async (eventData: Partial<Event>): Promise<boolean> => {
+  const saveEvent = async (
+    eventData: Partial<Event>,
+    files: File[] = [],
+    existingImages: string[] = [],
+    imagesToDelete: string[] = [],
+    eventId?: string,
+    directFormData?: FormData
+  ): Promise<boolean> => {
     try {
       setError(null);
-      const createData: CreateEventData = {
-        title: eventData.title || '',
-        description: eventData.description || '',
-        date: eventData.date || new Date().toISOString(),
-        endTime: eventData.endTime,
-        location: eventData.location || '',
-        imageUrl: eventData.imageUrl,
-      };
       
-      const newEvent = await EventsApi.create(createData);
-      setEvents(prev => [...prev, newEvent]);
-      return true;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create event';
-      setError(errorMessage);
-      console.error('Error creating event:', err);
-      return false;
-    }
-  };
+      let formData: FormData;
+      
+      if (directFormData) {
+        // Use the FormData passed directly from EventEditor
+        formData = directFormData;
+      } else {
+        // Create FormData from parameters (legacy support)
+        formData = new FormData();
+        
+        // Add text fields
+        if (eventData.title) formData.append('title', eventData.title);
+        if (eventData.description) formData.append('description', eventData.description);
+        if (eventData.date) formData.append('date', eventData.date);
+        if (eventData.startTime) formData.append('startTime', eventData.startTime);
+        if (eventData.endTime) formData.append('endTime', eventData.endTime);
+        if (eventData.location) formData.append('location', eventData.location);
+        
+        // Add file attachments
+        files.forEach(file => {
+          formData.append('images', file);
+        });
+        
+        // Add existing images and deletion info
+        formData.append('existingImages', JSON.stringify(existingImages));
+        formData.append('imagesToDelete', JSON.stringify(imagesToDelete));
+      }
 
-  const updateEvent = async (id: string, eventData: Partial<Event>): Promise<boolean> => {
-    try {
-      setError(null);
-      const updateData: UpdateEventData = {
-        title: eventData.title,
-        description: eventData.description,
-        date: eventData.date,
-        endTime: eventData.endTime,
-        location: eventData.location,
-        imageUrl: eventData.imageUrl,
-      };
+      let savedEvent: Event;
       
-      const updatedEvent = await EventsApi.update(id, updateData);
-      setEvents(prev => prev.map(event => 
-        event.id === id ? updatedEvent : event
-      ));
+      if (eventId) {
+        // Update existing event
+        savedEvent = await apiClient.patch<Event>(`/events/${eventId}`, formData);
+        setEvents(prev => prev.map(event => 
+          event.id === eventId ? savedEvent : event
+        ));
+      } else {
+        // Create new event
+        savedEvent = await apiClient.post<Event>('/events', formData);
+        setEvents(prev => [...prev, savedEvent]);
+      }
+      
       return true;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update event';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to save event';
       setError(errorMessage);
-      console.error('Error updating event:', err);
+      console.error('Error saving event:', err);
       return false;
     }
   };
@@ -73,7 +86,7 @@ export function useEvents() {
   const deleteEvent = async (id: string): Promise<boolean> => {
     try {
       setError(null);
-      await EventsApi.delete(id);
+      await apiClient.delete(`/events/${id}`);
       setEvents(prev => prev.filter(event => event.id !== id));
       return true;
     } catch (err) {
@@ -92,8 +105,7 @@ export function useEvents() {
     events,
     loading,
     error,
-    createEvent,
-    updateEvent,
+    saveEvent,
     deleteEvent,
     refetch: fetchEvents,
   };

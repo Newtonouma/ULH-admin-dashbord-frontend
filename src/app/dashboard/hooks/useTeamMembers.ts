@@ -1,6 +1,22 @@
 import { useState, useEffect } from 'react';
-import { TeamsApi } from '../../../services/api';
-import { TeamMember, CreateTeamMemberData, UpdateTeamMemberData } from '../../../types';
+import { apiClient } from '../../../lib/api-client';
+import { TeamMember } from '../../../types';
+
+// Backend team structure
+interface BackendTeam {
+  id: string;
+  name: string;
+  description: string;
+  imageUrls: string[];
+  contact?: string;
+  email?: string;
+  facebook?: string;
+  tiktok?: string;
+  twitter?: string;
+  linkedin?: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export function useTeamMembers() {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
@@ -11,8 +27,30 @@ export function useTeamMembers() {
     try {
       setLoading(true);
       setError(null);
-      const data = await TeamsApi.getAll();
-      setTeamMembers(data);
+      const rawData = await apiClient.get<BackendTeam[]>('/teams');
+      
+      // Transform backend data to frontend TeamMember structure
+      const transformedData: TeamMember[] = rawData.map(team => ({
+        id: team.id,
+        name: team.name,
+        position: '', // Backend doesn't have position, set default
+        bio: team.description || '', // Map description to bio
+        imageUrls: team.imageUrls || [],
+        contact: {
+          email: team.email,
+          phone: team.contact
+        },
+        socialMedia: {
+          linkedin: team.linkedin,
+          twitter: team.twitter,
+          facebook: team.facebook,
+          instagram: team.tiktok // Map tiktok to instagram
+        },
+        createdAt: team.createdAt,
+        updatedAt: team.updatedAt
+      }));
+      
+      setTeamMembers(transformedData);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch team members';
       setError(errorMessage);
@@ -22,50 +60,101 @@ export function useTeamMembers() {
     }
   };
 
-  const createTeamMember = async (memberData: Partial<TeamMember>): Promise<boolean> => {
+  const saveTeamMember = async (
+    memberData: Partial<TeamMember>,
+    files: File[] = [],
+    existingImages: string[] = [],
+    imagesToDelete: string[] = [],
+    memberId?: string
+  ): Promise<boolean> => {
     try {
       setError(null);
-      const createData: CreateTeamMemberData = {
-        name: memberData.name || '',
-        position: memberData.position || '',
-        bio: memberData.bio || '',
-        imageUrl: memberData.imageUrl || '',
-        socialMedia: memberData.socialMedia,
-        contact: memberData.contact,
-      };
       
-      const newMember = await TeamsApi.create(createData);
-      setTeamMembers(prev => [...prev, newMember]);
-      return true;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create team member';
-      setError(errorMessage);
-      console.error('Error creating team member:', err);
-      return false;
-    }
-  };
+      // Create FormData
+      const formData = new FormData();
+      
+      // Add text fields
+      if (memberData.name) formData.append('name', memberData.name);
+      if (memberData.bio) formData.append('bio', memberData.bio);
+      if (memberData.contact?.phone) formData.append('contact', memberData.contact.phone);
+      if (memberData.contact?.email) formData.append('email', memberData.contact.email);
+      if (memberData.socialMedia?.facebook) formData.append('facebook', memberData.socialMedia.facebook);
+      if (memberData.socialMedia?.instagram) formData.append('tiktok', memberData.socialMedia.instagram);
+      if (memberData.socialMedia?.twitter) formData.append('twitter', memberData.socialMedia.twitter);
+      if (memberData.socialMedia?.linkedin) formData.append('linkedin', memberData.socialMedia.linkedin);
+      
+      // Add file attachments
+      files.forEach(file => {
+        formData.append('images', file);
+      });
+      
+      // Add existing images and deletion info
+      formData.append('existingImages', JSON.stringify(existingImages));
+      formData.append('imagesToDelete', JSON.stringify(imagesToDelete));
 
-  const updateTeamMember = async (id: string, memberData: Partial<TeamMember>): Promise<boolean> => {
-    try {
-      setError(null);
-      const updateData: UpdateTeamMemberData = {
-        name: memberData.name,
-        position: memberData.position,
-        bio: memberData.bio,
-        imageUrl: memberData.imageUrl,
-        socialMedia: memberData.socialMedia,
-        contact: memberData.contact,
-      };
+      let savedMember: BackendTeam; // Backend response
       
-      const updatedMember = await TeamsApi.update(id, updateData);
-      setTeamMembers(prev => prev.map(member => 
-        member.id === id ? updatedMember : member
-      ));
+      if (memberId) {
+        // Update existing team member
+        savedMember = await apiClient.patch<BackendTeam>(`/teams/${memberId}`, formData);
+        
+        // Transform backend response to frontend structure
+        const transformedMember: TeamMember = {
+          id: savedMember.id,
+          name: savedMember.name,
+          position: '', // Backend doesn't have position
+          bio: savedMember.description || '',
+          imageUrls: savedMember.imageUrls || [],
+          contact: {
+            email: savedMember.email,
+            phone: savedMember.contact
+          },
+          socialMedia: {
+            linkedin: savedMember.linkedin,
+            twitter: savedMember.twitter,
+            facebook: savedMember.facebook,
+            instagram: savedMember.tiktok
+          },
+          createdAt: savedMember.createdAt,
+          updatedAt: savedMember.updatedAt
+        };
+        
+        setTeamMembers(prev => prev.map(member => 
+          member.id === memberId ? transformedMember : member
+        ));
+      } else {
+        // Create new team member
+        savedMember = await apiClient.post<BackendTeam>('/teams', formData);
+        
+        // Transform backend response to frontend structure
+        const transformedMember: TeamMember = {
+          id: savedMember.id,
+          name: savedMember.name,
+          position: '', // Backend doesn't have position
+          bio: savedMember.description || '',
+          imageUrls: savedMember.imageUrls || [],
+          contact: {
+            email: savedMember.email,
+            phone: savedMember.contact
+          },
+          socialMedia: {
+            linkedin: savedMember.linkedin,
+            twitter: savedMember.twitter,
+            facebook: savedMember.facebook,
+            instagram: savedMember.tiktok
+          },
+          createdAt: savedMember.createdAt,
+          updatedAt: savedMember.updatedAt
+        };
+        
+        setTeamMembers(prev => [...prev, transformedMember]);
+      }
+      
       return true;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update team member';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to save team member';
       setError(errorMessage);
-      console.error('Error updating team member:', err);
+      console.error('Error saving team member:', err);
       return false;
     }
   };
@@ -73,7 +162,7 @@ export function useTeamMembers() {
   const deleteTeamMember = async (id: string): Promise<boolean> => {
     try {
       setError(null);
-      await TeamsApi.delete(id);
+      await apiClient.delete(`/teams/${id}`);
       setTeamMembers(prev => prev.filter(member => member.id !== id));
       return true;
     } catch (err) {
@@ -92,8 +181,7 @@ export function useTeamMembers() {
     teamMembers,
     loading,
     error,
-    createTeamMember,
-    updateTeamMember,
+    saveTeamMember,
     deleteTeamMember,
     refetch: fetchTeamMembers,
   };

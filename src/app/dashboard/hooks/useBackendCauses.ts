@@ -30,7 +30,7 @@ export function useCauses() {
         goal: causeData.goal || 0,
         category: causeData.category || '',
         description: causeData.description || '',
-        imageUrl: causeData.imageUrl || '',
+        imageUrls: causeData.imageUrls || [],
       };
       
       const newCause = await CausesApi.create(createData);
@@ -52,7 +52,7 @@ export function useCauses() {
         goal: causeData.goal,
         category: causeData.category,
         description: causeData.description,
-        imageUrl: causeData.imageUrl,
+        imageUrls: causeData.imageUrls,
         raised: causeData.raised,
       };
       

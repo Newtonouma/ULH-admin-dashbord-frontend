@@ -1,41 +1,32 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Cause } from '../../api/causes/types';
+import { Cause } from '../../../types';
+import { apiClient } from '../../../lib/api-client';
 
 export function useCauses() {
   const [causes, setCauses] = useState<Cause[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
   const fetchCauses = useCallback(async () => {
     try {
-      const response = await fetch('/api/causes');
-      if (!response.ok) {
-        throw new Error('Failed to fetch causes');
-      }
-      const data = await response.json();
+      setLoading(true);
+      const data = await apiClient.get<Cause[]>('/causes');
       setCauses(data);
+      setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
   }, []);
-  const createCause = useCallback(async (newCause: Partial<Cause>) => {
+  
+  const createCause = useCallback(async (formData: FormData) => {
     try {
-      const response = await fetch('/api/causes', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newCause),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create cause');
-      }
-
-      await fetchCauses();
+      await apiClient.post('/causes', formData);
+      setError(null);
+      await fetchCauses(); // Refetch causes after creating
       return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -45,39 +36,28 @@ export function useCauses() {
 
   const deleteCause = async (id: string) => {
     try {
-      const response = await fetch(`/api/causes/${id}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) {
-        throw new Error('Failed to delete cause');
-      }
-      await fetchCauses();
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-      return false;
-    }
-  };  const updateCause = async (id: string, updatedCause: Partial<Cause>) => {
-    try {
-      const response = await fetch(`/api/causes/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedCause),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update cause');
-      }
-
-      await fetchCauses();
+      await apiClient.delete(`/causes/${id}`);
+      setError(null);
+      await fetchCauses(); // Refetch causes after deleting
       return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       return false;
     }
   };
+
+  const updateCause = async (id: string, formData: FormData) => {
+    try {
+      await apiClient.patch(`/causes/${id}`, formData);
+      setError(null);
+      await fetchCauses(); // Refetch causes after updating
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      return false;
+    }
+  };
+  
   useEffect(() => {
     fetchCauses();
   }, [fetchCauses]);

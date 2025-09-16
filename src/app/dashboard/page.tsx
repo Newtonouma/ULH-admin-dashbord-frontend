@@ -7,7 +7,7 @@ import './dashboard.css';
 import { Cause } from '../../types';
 import Sidebar from './components/Sidebar';
 import FullScreenEditor from './FullScreenEditor';
-import { useCauses } from './hooks/useBackendCauses';
+import { useCauses } from './hooks/useCauses';
 import CausesSection from './components/CausesSection';
 import EventsSection from './components/EventsSection';
 import GallerySection from './components/GallerySection';
@@ -127,14 +127,14 @@ export default function Dashboard() {
     }
   }, [isAuthLoading, isAuthenticated, router]);
   // Cause handlers
-  const handleCreateCause = async (newCause: Partial<Cause>) => {
-    const success = await createCause(newCause);
+  const handleCreateCause = async (formData: FormData) => {
+    const success = await createCause(formData);
     if (success) setIsCreating(false);
   };
 
-  const handleEditCause = async (updatedCause: Partial<Cause>) => {
+  const handleEditCause = async (formData: FormData) => {
     if (!editingCause?.id) return;
-    const success = await updateCause(editingCause.id, updatedCause);
+    const success = await updateCause(editingCause.id, formData);
     if (success) setEditingCause(null);
   };
 
@@ -179,7 +179,7 @@ export default function Dashboard() {
               description: '',
               category: '',
               goal: 0,
-              imageUrl: '',
+              imageUrls: [],
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString()
             }}

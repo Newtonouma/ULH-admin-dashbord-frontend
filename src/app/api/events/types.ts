@@ -1,20 +1,6 @@
-export interface Event {
-  id?: string;
-  title: string;
-  description: string;
-  date: string; // ISO date string
-  endTime?: string; // ISO date string
-  location: string;
-  imageUrl: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-// Type alias for creating events (excludes auto-generated fields)
-export type CreateEventDto = Omit<Event, 'id' | 'createdAt' | 'updatedAt'>;
-
-// Type alias for updating events (excludes auto-generated fields and allows partial updates)
-export type UpdateEventDto = Partial<Omit<Event, 'id' | 'createdAt' | 'updatedAt'>>;
+// Import types from the main types file to maintain consistency
+export type { Event, CreateEventData, UpdateEventData } from '../../../types/index';
+import type { Event, UpdateEventData } from '../../../types/index';
 
 export function isValidUrl(url: string): boolean {
   try {
@@ -30,9 +16,13 @@ export function isValidISODate(dateString: string): boolean {
   return !isNaN(date.getTime()) && dateString === date.toISOString();
 }
 
-export function validateEventData(data: Partial<Event>): string | null {
-  if (data.imageUrl && !isValidUrl(data.imageUrl)) {
-    return 'Image URL must be a valid URL address';
+export function validateEventData(data: UpdateEventData): string | null {
+  if (data.imageUrls && data.imageUrls.length > 0) {
+    for (const url of data.imageUrls) {
+      if (!isValidUrl(url)) {
+        return 'All image URLs must be valid URL addresses';
+      }
+    }
   }
   
   // For date validation, accept both ISO strings and simple date strings

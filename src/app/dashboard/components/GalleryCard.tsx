@@ -12,10 +12,10 @@ interface GalleryCardProps {
 
 export default function GalleryCard({ item, onEdit, onDelete }: GalleryCardProps) {
   const getImageUrl = () => {
-    if (item.imageUrl) {
+    if (item.imageUrls && item.imageUrls.length > 0) {
       try {
-        new URL(item.imageUrl);
-        return item.imageUrl;
+        new URL(item.imageUrls[0]);
+        return item.imageUrls[0];
       } catch {
         return 'https://via.placeholder.com/300x200?text=Invalid+Image';
       }

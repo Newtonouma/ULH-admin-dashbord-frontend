@@ -39,11 +39,11 @@ export default function CausesPanel() {
     }
   };
 
-  const handleSave = async (causeData: Partial<Cause>): Promise<void> => {
+  const handleSave = async (formData: FormData): Promise<void> => {
     if (selectedCause && selectedCause.id) {
-      await updateCause(selectedCause.id, causeData);
+      await updateCause(selectedCause.id, formData);
     } else {
-      await createCause(causeData);
+      await createCause(formData);
     }
     await loadCauses();
     setIsEditorOpen(false);

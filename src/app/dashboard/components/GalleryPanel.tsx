@@ -1,32 +1,24 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { GalleryItem, CreateGalleryItemData } from '../../../types';
+import { useState } from 'react';
+import { GalleryItem } from '../../../types';
 import { useGallery } from '../hooks/useGallery';
 import GalleryCard from './GalleryCard';
 import GalleryEditor from './GalleryEditor';
 import styles from './GalleryPanel.module.css';
 
+interface GalleryFormData {
+  title: string;
+  description: string;
+  type: 'photo' | 'video';
+  formData?: FormData;
+  existingImages?: string[];
+}
+
 export default function GalleryPanel() {
-  const [items, setItems] = useState<GalleryItem[]>([]);
   const [selectedItem, setSelectedItem] = useState<GalleryItem | undefined>();
   const [isEditorOpen, setIsEditorOpen] = useState(false);
-  const { loading, error, fetchGallery, createGalleryItem, updateGalleryItem, deleteGalleryItem } = useGallery();
-
-  useEffect(() => {
-    const loadGallery = async () => {
-      try {
-        const data = await fetchGallery();
-        if (data) {
-          setItems(data);
-        }
-      } catch (err) {
-        console.error('Failed to load gallery:', err);
-      }
-    };
-    
-    loadGallery();
-  }, [fetchGallery]);
+  const { galleryItems, loading, error, createGalleryItem, updateGalleryItem, deleteGalleryItem, refetch } = useGallery();
 
   const handleCreate = () => {
     setSelectedItem(undefined);
@@ -42,31 +34,42 @@ export default function GalleryPanel() {
     if (window.confirm('Are you sure you want to delete this gallery item?')) {
       const success = await deleteGalleryItem(id);
       if (success) {
-        setItems(items.filter(item => item.id !== id));
+        // Item will be removed from galleryItems by the hook
+        console.log('Gallery item deleted successfully');
       }
     }
   };
 
-  const handleSave = async (data: CreateGalleryItemData): Promise<boolean> => {
+  const handleSave = async (data: GalleryFormData): Promise<boolean> => {
     let success: boolean;
+    
+    // Extract data and files from the GalleryFormData
+    const galleryData = {
+      title: data.title,
+      description: data.description,
+      type: data.type as 'photo' | 'video',
+      imageUrls: data.existingImages || []
+    };
+    
+    // Extract files from FormData
+    const files: File[] = [];
+    if (data.formData) {
+      const formDataFiles = data.formData.getAll('images') as File[];
+      files.push(...formDataFiles);
+    }
+    const existingImages: string[] = data.existingImages || [];
+    
     if (selectedItem && selectedItem.id) {
-      success = await updateGalleryItem(selectedItem.id, data);
+      success = await updateGalleryItem(selectedItem.id, galleryData, files, existingImages);
       if (success) {
-        setItems(items.map(item => 
-          item.id === selectedItem.id ? { ...item, ...data } : item
-        ));
+        // Refetch data to update the UI
+        await refetch();
       }
     } else {
-      success = await createGalleryItem(data);
+      success = await createGalleryItem(galleryData, files);
       if (success) {
-        try {
-          const updatedData = await fetchGallery();
-          if (updatedData) {
-            setItems(updatedData);
-          }
-        } catch (err) {
-          console.error('Failed to reload gallery after creating item:', err);
-        }
+        // Refetch data to update the UI
+        await refetch();
       }
     }
     return success;
@@ -120,7 +123,7 @@ export default function GalleryPanel() {
         </button>
       </div>
 
-      {items.length === 0 ? (
+      {galleryItems.length === 0 ? (
         <div className={styles.emptyState}>
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M4 16L8.586 11.414C8.961 11.039 9.47 10.828 10 10.828C10.53 10.828 11.039 11.039 11.414 11.414L16 16M14 14L15.586 12.414C15.961 12.039 16.47 11.828 17 11.828C17.53 11.828 18.039 12.039 18.414 12.414L20 14M14 8H14.01M6 20H18C19.1046 20 20 19.1046 20 18V6C20 4.89543 19.1046 4 18 4H6C4.89543 4 4 4.89543 4 6V18C4 19.1046 4.89543 20 6 20Z" stroke="#22c55e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -139,7 +142,7 @@ export default function GalleryPanel() {
         </div>
       ) : (
         <div className={styles.galleryGrid}>
-          {items.map(item => (
+          {galleryItems.map((item: GalleryItem) => (
             <GalleryCard
               key={item.id}
               item={item}

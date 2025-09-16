@@ -22,17 +22,24 @@ export function useGallery() {
     }
   };
 
-  const createGalleryItem = async (itemData: Partial<GalleryItem>): Promise<boolean> => {
+  const createGalleryItem = async (
+    itemData: Partial<GalleryItem>,
+    files: File[] = []
+  ): Promise<boolean> => {
     try {
       setError(null);
-      const createData: CreateGalleryItemData = {
-        title: itemData.title || '',
-        description: itemData.description || '',
-        imageUrl: itemData.imageUrl || '',
-        type: itemData.type || 'photo',
-      };
       
-      const newItem = await GalleryApi.create(createData);
+      const formData = new FormData();
+      formData.append('title', itemData.title || '');
+      formData.append('description', itemData.description || '');
+      formData.append('type', itemData.type || 'photo');
+      
+      // Add files to FormData
+      files.forEach((file) => {
+        formData.append('images', file);
+      });
+
+      const newItem = await GalleryApi.create(formData);
       setGalleryItems(prev => [...prev, newItem]);
       return true;
     } catch (err) {
@@ -43,17 +50,31 @@ export function useGallery() {
     }
   };
 
-  const updateGalleryItem = async (id: string, itemData: Partial<GalleryItem>): Promise<boolean> => {
+  const updateGalleryItem = async (
+    id: string,
+    itemData: Partial<GalleryItem>,
+    files: File[] = [],
+    existingImages: string[] = []
+  ): Promise<boolean> => {
     try {
       setError(null);
-      const updateData: UpdateGalleryItemData = {
-        title: itemData.title,
-        description: itemData.description,
-        imageUrl: itemData.imageUrl,
-        type: itemData.type,
-      };
       
-      const updatedItem = await GalleryApi.update(id, updateData);
+      const formData = new FormData();
+      if (itemData.title !== undefined) formData.append('title', itemData.title);
+      if (itemData.description !== undefined) formData.append('description', itemData.description);
+      if (itemData.type !== undefined) formData.append('type', itemData.type);
+      
+      // Add existing images
+      existingImages.forEach((imageUrl) => {
+        formData.append('existingImages', imageUrl);
+      });
+      
+      // Add new files
+      files.forEach((file) => {
+        formData.append('images', file);
+      });
+
+      const updatedItem = await GalleryApi.update(id, formData);
       setGalleryItems(prev => prev.map(item => 
         item.id === id ? updatedItem : item
       ));

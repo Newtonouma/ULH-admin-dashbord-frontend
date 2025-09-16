@@ -4,11 +4,11 @@ import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import { useState } from 'react';
 import { Cause } from '../../types';
-import ImageUpload from '@/components/ImageUpload';
+import MultipleImageUpload from '@/components/MultipleImageUpload';
 
 interface FullScreenEditorProps {
   cause?: Cause;
-  onSave: (updatedCause: Partial<Cause>) => Promise<void>;
+  onSave: (formData: FormData) => Promise<void>;
   onClose: () => void;
 }
 
@@ -18,7 +18,9 @@ export default function FullScreenEditor({ cause, onSave, onClose }: FullScreenE
   const [title, setTitle] = useState(cause?.title || '');
   const [category, setCategory] = useState(cause?.category || '');
   const [goal, setGoal] = useState(cause?.goal?.toString() || '');
-  const [imageUrl, setImageUrl] = useState(cause?.imageUrl || '');
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagesToDelete, setImagesToDelete] = useState<string[]>([]);
+  
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -30,43 +32,70 @@ export default function FullScreenEditor({ cause, onSave, onClose }: FullScreenE
     content: cause?.description || '',
   });
 
-  const handleImageUpload = (uploadResult: { url: string }) => {
-    setImageUrl(uploadResult.url);
+  const handleImageFilesChange = (files: File[]) => {
+    setImageFiles(files);
+  };
+
+  const handleDeleteExistingImage = (imageUrl: string) => {
+    setImagesToDelete(prev => [...prev, imageUrl]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);    try {
+    setError(null);
+    
+    try {
       // Parse and validate goal as number
       const goalValue = parseFloat(goal);
       if (isNaN(goalValue) || goalValue < 0) {
         throw new Error('Goal must be a valid number greater than or equal to 0');
       }
 
-      // Format the data to match the backend structure (no updatedAt field)
-      const formattedData: Partial<Cause> = {
-        title: title.trim(),
-        description: editor?.getHTML() || '',
-        category: category,
-        goal: goalValue, // Send as number
-        imageUrl: imageUrl
-      };
-
       // Validate required fields
-      if (!formattedData.title) {
+      if (!title.trim()) {
         throw new Error('Title is required');
-      }      if (!formattedData.category) {
+      }
+      if (!category) {
         throw new Error('Category is required');
       }
-      if (!formattedData.goal) {
+      if (!goalValue) {
         throw new Error('Goal amount is required');
       }
-      if (!formattedData.description) {
+      const description = editor?.getHTML() || '';
+      if (!description) {
         throw new Error('Description is required');
       }
 
-      await onSave(formattedData);
+      // Create FormData
+      const formData = new FormData();
+      
+      // Add basic fields
+      formData.append('title', title.trim());
+      formData.append('category', category);
+      formData.append('goal', goalValue.toString());
+      formData.append('description', description);
+      
+      // Add existing images (not deleted)
+      if (cause?.imageUrls) {
+        const remainingImages = cause.imageUrls.filter(url => !imagesToDelete.includes(url));
+        formData.append('existingImages', JSON.stringify(remainingImages));
+      } else {
+        // For new causes, send an empty array
+        formData.append('existingImages', JSON.stringify([]));
+      }
+      
+      // Add images to delete
+      if (imagesToDelete.length > 0) {
+        formData.append('imagesToDelete', JSON.stringify(imagesToDelete));
+      }
+      
+      // Add new image files
+      imageFiles.forEach((file) => {
+        formData.append(`images`, file);
+      });
+
+      await onSave(formData);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update cause');
@@ -90,7 +119,8 @@ export default function FullScreenEditor({ cause, onSave, onClose }: FullScreenE
   };
 
   return (
-    <div className="fullscreen-editor">      <div className="editor-header">
+    <div className="fullscreen-editor">
+      <div className="editor-header">
         <h2>{cause ? 'Edit Cause' : 'Create New Cause'}</h2>
         <button className="btn-secondary" onClick={onClose}>Close</button>
       </div>
@@ -124,7 +154,9 @@ export default function FullScreenEditor({ cause, onSave, onClose }: FullScreenE
             <option value="Social">Social</option>
             <option value="Other">Other</option>
           </select>
-        </div>        <div className="form-group">
+        </div>
+
+        <div className="form-group">
           <label htmlFor="goal">Goal Amount</label>
           <input
             type="number"
@@ -139,13 +171,13 @@ export default function FullScreenEditor({ cause, onSave, onClose }: FullScreenE
         </div>
 
         <div className="form-group">
-          <label>Cause Image</label>
-          <ImageUpload
-            currentImageUrl={imageUrl}
-            onUpload={handleImageUpload}
-            onError={(error) => setError(error)}
-            folder="causes"
-            maxFileSize={10 * 1024 * 1024}
+          <label>Cause Images</label>
+          <MultipleImageUpload
+            onFilesChange={handleImageFilesChange}
+            existingImages={cause?.imageUrls}
+            onDeleteExisting={handleDeleteExistingImage}
+            maxFiles={10}
+            accept="image/*"
           />
         </div>
 
@@ -202,7 +234,8 @@ export default function FullScreenEditor({ cause, onSave, onClose }: FullScreenE
         <div className="editor-actions">
           <button type="button" className="btn-secondary" onClick={onClose}>
             Cancel
-          </button>          <button type="submit" className="btn-primary" disabled={loading}>
+          </button>
+          <button type="submit" className="btn-primary" disabled={loading}>
             {loading ? 'Saving...' : (cause ? 'Save Changes' : 'Create Cause')}
           </button>
         </div>

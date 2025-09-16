@@ -96,11 +96,11 @@ export class GalleryApi {
     return apiClient.get<GalleryItem>(`${API_CONFIG.ENDPOINTS.GALLERY}/${id}`);
   }
 
-  static async create(data: CreateGalleryItemData): Promise<GalleryItem> {
+  static async create(data: CreateGalleryItemData | FormData): Promise<GalleryItem> {
     return apiClient.post<GalleryItem>(API_CONFIG.ENDPOINTS.GALLERY, data);
   }
 
-  static async update(id: string, data: UpdateGalleryItemData): Promise<GalleryItem> {
+  static async update(id: string, data: UpdateGalleryItemData | FormData): Promise<GalleryItem> {
     return apiClient.patch<GalleryItem>(`${API_CONFIG.ENDPOINTS.GALLERY}/${id}`, data);
   }
 

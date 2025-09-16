@@ -13,10 +13,10 @@ interface EventCardProps {
 export default function EventCard({ event, onEdit, onDelete }: EventCardProps) {
   // Safe URL extraction with validation
   const getImageUrl = () => {
-    if (event.imageUrl) {
+    if (event.imageUrls && event.imageUrls.length > 0) {
       try {
-        new URL(event.imageUrl);
-        return event.imageUrl;
+        new URL(event.imageUrls[0]);
+        return event.imageUrls[0];
       } catch {
         return 'https://via.placeholder.com/400x200?text=Event+Image';
       }
@@ -34,18 +34,30 @@ export default function EventCard({ event, onEdit, onDelete }: EventCardProps) {
   };
 
   const formatTime = () => {
-    if (!event.endTime) return null;
+    if (!event.startTime || !event.endTime) return 'Time not specified';
+    
     try {
-      // Handle time format like "17:00" or full ISO strings
-      const timeStr = event.endTime.includes('T') ? event.endTime : `1970-01-01T${event.endTime}`;
-      const time = new Date(timeStr);
-      return time.toLocaleTimeString('en-US', { 
+      // Format start time
+      const startTimeStr = event.startTime.includes('T') ? event.startTime : `1970-01-01T${event.startTime}`;
+      const startTime = new Date(startTimeStr);
+      const formattedStartTime = startTime.toLocaleTimeString('en-US', { 
         hour: 'numeric', 
         minute: '2-digit',
         hour12: true 
       });
+
+      // Format end time
+      const endTimeStr = event.endTime.includes('T') ? event.endTime : `1970-01-01T${event.endTime}`;
+      const endTime = new Date(endTimeStr);
+      const formattedEndTime = endTime.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+      });
+
+      return `${formattedStartTime} - ${formattedEndTime}`;
     } catch {
-      return event.endTime;
+      return `${event.startTime} - ${event.endTime}`;
     }
   };
 

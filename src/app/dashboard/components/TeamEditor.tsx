@@ -1,27 +1,42 @@
 'use client';
 
 import { useState } from 'react';
-import { Team, CreateTeamDto, UpdateTeamDto } from '../../api/teams/types';
-import ImageUpload from '@/components/ImageUpload';
+import { TeamMember } from '../../../types';
+import FileInput from '@/components/FileInput';
+import styles from './TeamEditor.module.css';
+
+interface TeamFormData {
+  name: string;
+  bio: string;
+  contact: string;
+  email: string;
+  facebook: string;
+  linkedin: string;
+  twitter: string;
+  tiktok: string;
+  formData?: FormData;
+  existingImages?: string[];
+}
 
 interface TeamEditorProps {
-  team?: Team;
-  onSave: (team: CreateTeamDto | UpdateTeamDto) => Promise<void>;
+  team?: TeamMember;
+  onSave: (data: TeamFormData) => Promise<boolean>;
   onClose: () => void;
 }
 
 export default function TeamEditor({ team, onSave, onClose }: TeamEditorProps) {
   const [formData, setFormData] = useState({
     name: team?.name || '',
-    description: team?.description || '',
-    imageUrl: team?.imageUrl || '',
-    contact: team?.contact || '',
-    email: team?.email || '',
-    facebook: team?.facebook || '',
-    linkedin: team?.linkedin || '',
-    twitter: team?.twitter || '',
-    tiktok: team?.tiktok || '',
+    bio: team?.bio || '',
+    contact: team?.contact?.phone || '',
+    email: team?.contact?.email || '',
+    facebook: team?.socialMedia?.facebook || '',
+    linkedin: team?.socialMedia?.linkedin || '',
+    twitter: team?.socialMedia?.twitter || '',
+    tiktok: team?.socialMedia?.instagram || '',
   });
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>(team?.imageUrls || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,8 +45,12 @@ export default function TeamEditor({ team, onSave, onClose }: TeamEditorProps) {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleImageUpload = (uploadResult: { url: string }) => {
-    setFormData(prev => ({ ...prev, imageUrl: uploadResult.url }));
+  const handleFileChange = (files: File[]) => {
+    setSelectedFiles(files);
+  };
+
+  const handleRemoveExistingImage = (index: number) => {
+    setExistingImages(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,22 +59,45 @@ export default function TeamEditor({ team, onSave, onClose }: TeamEditorProps) {
     setError(null);
 
     try {
-      // Only send non-empty fields
-      const payload: Partial<Team> = {
-        name: formData.name.trim(),
-        description: formData.description,
-        imageUrl: formData.imageUrl
+      // Create FormData for backend
+      const formDataToSend = new FormData();
+      
+      // Add text fields
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('bio', formData.bio);
+      formDataToSend.append('contact', formData.contact);
+      formDataToSend.append('email', formData.email);
+      formDataToSend.append('facebook', formData.facebook);
+      formDataToSend.append('linkedin', formData.linkedin);
+      formDataToSend.append('twitter', formData.twitter);
+      formDataToSend.append('tiktok', formData.tiktok);
+      
+      // Add existing images
+      formDataToSend.append('existingImages', JSON.stringify(existingImages));
+      
+      // Add new files
+      selectedFiles.forEach((file) => {
+        formDataToSend.append(`images`, file);
+      });
+
+      // For the onSave callback, create the expected object
+      const backendData: TeamFormData = {
+        name: formData.name,
+        bio: formData.bio,
+        contact: formData.contact,
+        email: formData.email,
+        facebook: formData.facebook,
+        linkedin: formData.linkedin,
+        twitter: formData.twitter,
+        tiktok: formData.tiktok,
+        formData: formDataToSend, // Pass FormData for the backend
+        existingImages: existingImages,
       };
-
-      if (formData.contact.trim()) payload.contact = formData.contact.trim();
-      if (formData.email.trim()) payload.email = formData.email.trim();
-      if (formData.facebook.trim()) payload.facebook = formData.facebook.trim();
-      if (formData.linkedin.trim()) payload.linkedin = formData.linkedin.trim();
-      if (formData.twitter.trim()) payload.twitter = formData.twitter.trim();
-      if (formData.tiktok.trim()) payload.tiktok = formData.tiktok.trim();
-
-      await onSave(payload);
-      onClose();
+      
+      const success = await onSave(backendData);
+      if (success) {
+        onClose();
+      }
     } catch (err) {
       setError('Failed to save team member. Please try again.');
       console.error('Save error:', err);
@@ -65,22 +107,27 @@ export default function TeamEditor({ team, onSave, onClose }: TeamEditorProps) {
   };
 
   return (
-    <div className="team-editor">
-      <div className="editor-form">
-        <div className="form-header">
+    <div className={styles.modalOverlay}>
+      <div className={styles.modalContent}>
+        <div className={styles.editorHeader}>
           <h2>{team ? 'Edit Team Member' : 'Add New Team Member'}</h2>
           <button 
-            className="btn-close"
+            className={styles.closeButton}
             onClick={onClose}
             aria-label="Close"
           >
-            ×
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="name">Name</label>
+        {error && <div className={styles.error}>{error}</div>}
+
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.formGroup}>
+            <label htmlFor="name" className={styles.label}>Name</label>
             <input
               type="text"
               id="name"
@@ -89,35 +136,57 @@ export default function TeamEditor({ team, onSave, onClose }: TeamEditorProps) {
               onChange={handleChange}
               required
               placeholder="Enter team member's name"
+              className={styles.input}
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="description">Description</label>
+          <div className={styles.formGroup}>
+            <label htmlFor="bio" className={styles.label}>Bio</label>
             <textarea
-              id="description"
-              name="description"
-              value={formData.description}
+              id="bio"
+              name="bio"
+              value={formData.bio}
               onChange={handleChange}
               required
-              placeholder="Enter team member's description"
+              placeholder="Enter team member's bio"
               rows={4}
+              className={styles.textarea}
             />
           </div>
 
-          <div className="form-group">
-            <label>Profile Image</label>
-            <ImageUpload
-              currentImageUrl={formData.imageUrl}
-              onUpload={handleImageUpload}
-              onError={(error) => setError(error)}
-              folder="teams"
-              maxFileSize={10 * 1024 * 1024}
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Team Member Images</label>
+            <FileInput
+              onFilesSelect={handleFileChange}
+              accept="image/*"
+              multiple={true}
+              maxFiles={5}
             />
+            
+            {/* Show existing images */}
+            {existingImages.length > 0 && (
+              <div className={styles.existingImages}>
+                <h4>Current Images:</h4>
+                <div className={styles.imagePreviewGrid}>
+                  {existingImages.map((url, index) => (
+                    <div key={index} className={styles.imagePreviewItem}>
+                      <img src={url} alt={`Team member ${index + 1}`} className={styles.previewImage} />
+                      <button
+                        type="button"
+                        className={styles.removeImageBtn}
+                        onClick={() => handleRemoveExistingImage(index)}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
-          <div className="form-group">
-            <label htmlFor="contact">Contact Number</label>
+          <div className={styles.formGroup}>
+            <label htmlFor="contact" className={styles.label}>Contact Number</label>
             <input
               type="tel"
               id="contact"
@@ -125,11 +194,12 @@ export default function TeamEditor({ team, onSave, onClose }: TeamEditorProps) {
               value={formData.contact}
               onChange={handleChange}
               placeholder="Enter contact number (optional)"
+              className={styles.input}
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
+          <div className={styles.formGroup}>
+            <label htmlFor="email" className={styles.label}>Email</label>
             <input
               type="email"
               id="email"
@@ -137,11 +207,12 @@ export default function TeamEditor({ team, onSave, onClose }: TeamEditorProps) {
               value={formData.email}
               onChange={handleChange}
               placeholder="Enter email address (optional)"
+              className={styles.input}
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="linkedin">LinkedIn URL</label>
+          <div className={styles.formGroup}>
+            <label htmlFor="linkedin" className={styles.label}>LinkedIn URL</label>
             <input
               type="url"
               id="linkedin"
@@ -149,11 +220,12 @@ export default function TeamEditor({ team, onSave, onClose }: TeamEditorProps) {
               value={formData.linkedin}
               onChange={handleChange}
               placeholder="Enter LinkedIn profile URL (optional)"
+              className={styles.input}
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="twitter">Twitter URL</label>
+          <div className={styles.formGroup}>
+            <label htmlFor="twitter" className={styles.label}>Twitter URL</label>
             <input
               type="url"
               id="twitter"
@@ -161,11 +233,12 @@ export default function TeamEditor({ team, onSave, onClose }: TeamEditorProps) {
               value={formData.twitter}
               onChange={handleChange}
               placeholder="Enter Twitter profile URL (optional)"
+              className={styles.input}
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="facebook">Facebook URL</label>
+          <div className={styles.formGroup}>
+            <label htmlFor="facebook" className={styles.label}>Facebook URL</label>
             <input
               type="url"
               id="facebook"
@@ -173,11 +246,12 @@ export default function TeamEditor({ team, onSave, onClose }: TeamEditorProps) {
               value={formData.facebook}
               onChange={handleChange}
               placeholder="Enter Facebook profile URL (optional)"
+              className={styles.input}
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="tiktok">TikTok URL</label>
+          <div className={styles.formGroup}>
+            <label htmlFor="tiktok" className={styles.label}>TikTok URL</label>
             <input
               type="url"
               id="tiktok"
@@ -185,15 +259,14 @@ export default function TeamEditor({ team, onSave, onClose }: TeamEditorProps) {
               value={formData.tiktok}
               onChange={handleChange}
               placeholder="Enter TikTok profile URL (optional)"
+              className={styles.input}
             />
           </div>
 
-          {error && <div className="error-message">{error}</div>}
-
-          <div className="editor-actions">
+          <div className={styles.editorActions}>
             <button
               type="button"
-              className="btn-secondary"
+              className={styles.cancelButton}
               onClick={onClose}
               disabled={isSubmitting}
             >
@@ -201,7 +274,7 @@ export default function TeamEditor({ team, onSave, onClose }: TeamEditorProps) {
             </button>
             <button
               type="submit"
-              className="btn-primary"
+              className={styles.saveButton}
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Saving...' : 'Save Team Member'}

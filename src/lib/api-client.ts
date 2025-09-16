@@ -109,11 +109,18 @@ class ApiClient {
     const config: RequestInit = {
       ...options,
       headers: {
-        'Content-Type': 'application/json',
         ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
     };
+
+    // Only set Content-Type to application/json if body is not FormData
+    if (!(options.body instanceof FormData)) {
+      config.headers = {
+        'Content-Type': 'application/json',
+        ...config.headers,
+      };
+    }
 
     try {
       const response = await fetch(url, config);
@@ -204,6 +211,15 @@ class ApiClient {
       console.log('Token refresh: Failed with error:', error);
       this.processQueue(null, error);
       TokenManager.clearTokens();
+      
+      // Redirect to login if we're in the browser and not already on login page
+      if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+        console.log('Token refresh failed - redirecting to login');
+        // Show user-friendly message
+        alert('Your session has expired. Please log in again.');
+        window.location.href = '/login';
+      }
+      
       throw error;
     } finally {
       this.isRefreshing = false;
@@ -303,16 +319,18 @@ class ApiClient {
   }
 
   async post<T>(endpoint: string, data: any): Promise<T> {
+    const body = data instanceof FormData ? data : JSON.stringify(data);
     return this.request<T>(endpoint, {
       method: 'POST',
-      body: JSON.stringify(data),
+      body,
     });
   }
 
   async patch<T>(endpoint: string, data: any): Promise<T> {
+    const body = data instanceof FormData ? data : JSON.stringify(data);
     return this.request<T>(endpoint, {
       method: 'PATCH',
-      body: JSON.stringify(data),
+      body,
     });
   }
 

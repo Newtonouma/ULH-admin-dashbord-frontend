@@ -7,11 +7,24 @@ import TeamCard from './TeamCard';
 import TeamEditor from './TeamEditor';
 import styles from "./TeamsPanel.module.css";
 
+interface TeamFormData {
+  name: string;
+  bio: string;
+  contact: string;
+  email: string;
+  facebook: string;
+  linkedin: string;
+  twitter: string;
+  tiktok: string;
+  formData?: FormData;
+  existingImages?: string[];
+}
+
 export default function TeamsPanel() {
   const [selectedTeam, setSelectedTeam] = useState<TeamMember | undefined>();
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   
-  const { teamMembers, loading, error, createTeamMember, updateTeamMember, deleteTeamMember } = useTeamMembers();
+  const { teamMembers, loading, error, saveTeamMember, deleteTeamMember } = useTeamMembers();
 
   const handleCreate = () => {
     setSelectedTeam(undefined);
@@ -29,12 +42,46 @@ export default function TeamsPanel() {
     }
   };
   
-  const handleSave = async (teamData: Partial<TeamMember>): Promise<void> => {
-    if (selectedTeam && selectedTeam.id) {
-      await updateTeamMember(selectedTeam.id, teamData);
-    } else {
-      await createTeamMember(teamData);
+  const handleSave = async (data: TeamFormData): Promise<boolean> => {
+    let success: boolean;
+    
+    // Extract data and files from the TeamFormData
+    const teamData = {
+      name: data.name,
+      bio: data.bio,
+      contact: {
+        phone: data.contact,
+        email: data.email
+      },
+      socialMedia: {
+        facebook: data.facebook,
+        linkedin: data.linkedin,
+        twitter: data.twitter,
+        instagram: data.tiktok
+      },
+      imageUrls: data.existingImages || []
+    };
+    
+    // Extract files from FormData
+    const files: File[] = [];
+    if (data.formData) {
+      const formDataFiles = data.formData.getAll('images') as File[];
+      files.push(...formDataFiles);
     }
+    const existingImages: string[] = data.existingImages || [];
+
+    if (selectedTeam && selectedTeam.id) {
+      success = await saveTeamMember(teamData, files, existingImages, [], selectedTeam.id);
+    } else {
+      success = await saveTeamMember(teamData, files, existingImages);
+    }
+    
+    if (success) {
+      setIsEditorOpen(false);
+      setSelectedTeam(undefined);
+    }
+    
+    return success;
   };
 
   const handleClose = () => {

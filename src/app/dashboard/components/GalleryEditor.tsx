@@ -2,12 +2,20 @@
 
 import { useState, useEffect } from 'react';
 import { GalleryItem, CreateGalleryItemData } from '../../../types';
-import ImageUpload from '@/components/ImageUpload';
+import FileInput from '@/components/FileInput';
 import styles from './GalleryEditor.module.css';
+
+interface GalleryFormData {
+  title: string;
+  description: string;
+  type: 'photo' | 'video';
+  formData?: FormData;
+  existingImages?: string[];
+}
 
 interface GalleryEditorProps {
   item?: GalleryItem;
-  onSave: (data: CreateGalleryItemData) => Promise<boolean>;
+  onSave: (data: GalleryFormData) => Promise<boolean>;
   onClose: () => void;
 }
 
@@ -15,9 +23,10 @@ export default function GalleryEditor({ item, onSave, onClose }: GalleryEditorPr
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    imageUrl: '',
     type: 'photo' as 'photo' | 'video',
   });
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,16 +35,16 @@ export default function GalleryEditor({ item, onSave, onClose }: GalleryEditorPr
       setFormData({
         title: item.title || '',
         description: item.description || '',
-        imageUrl: item.imageUrl || '',
         type: item.type || 'photo',
       });
+      setExistingImages(item.imageUrls || []);
     } else {
       setFormData({
         title: '',
         description: '',
-        imageUrl: '',
         type: 'photo',
       });
+      setExistingImages([]);
     }
   }, [item]);
 
@@ -44,8 +53,12 @@ export default function GalleryEditor({ item, onSave, onClose }: GalleryEditorPr
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleImageUpload = (result: { url: string; publicId?: string }) => {
-    setFormData(prev => ({ ...prev, imageUrl: result.url }));
+  const handleFilesSelect = (files: File[]) => {
+    setSelectedFiles(files);
+  };
+
+  const handleExistingImageRemove = (index: number) => {
+    setExistingImages(prev => prev.filter((_, i) => i !== index));
   };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,11 +66,31 @@ export default function GalleryEditor({ item, onSave, onClose }: GalleryEditorPr
     setError(null);
 
     try {
-      const backendData: CreateGalleryItemData = {
+      // Create FormData for file upload
+      const formDataToSend = new FormData();
+      
+      // Add text fields
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('type', formData.type);
+      
+      // Add existing images
+      existingImages.forEach((url, index) => {
+        formDataToSend.append(`existingImages[${index}]`, url);
+      });
+      
+      // Add new files
+      selectedFiles.forEach((file) => {
+        formDataToSend.append(`images`, file);
+      });
+
+      // For the onSave callback, create the expected object
+      const backendData: GalleryFormData = {
         title: formData.title,
         description: formData.description,
-        imageUrl: formData.imageUrl,
         type: formData.type,
+        formData: formDataToSend, // Pass FormData for the backend
+        existingImages: existingImages,
       };
       
       const success = await onSave(backendData);
@@ -132,13 +165,16 @@ export default function GalleryEditor({ item, onSave, onClose }: GalleryEditorPr
           </div>
 
           <div className={styles.formGroup}>
-            <label>Gallery Image</label>
+            <label>Gallery Images</label>
             <div className={styles.imageUploadContainer}>
-              <ImageUpload
-                currentImageUrl={formData.imageUrl}
-                onUpload={handleImageUpload}
-                onError={(error) => setError(error)}
-                folder="gallery"
+              <FileInput
+                onFilesSelect={handleFilesSelect}
+                existingImages={existingImages}
+                onExistingImageRemove={handleExistingImageRemove}
+                multiple={true}
+                maxFiles={10}
+                accept="image/*"
+                disabled={isSubmitting}
               />
             </div>
           </div>

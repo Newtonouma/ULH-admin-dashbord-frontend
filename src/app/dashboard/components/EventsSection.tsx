@@ -7,35 +7,92 @@ import EventCard from './EventCard';
 import EventEditor from './EventEditor';
 import styles from "./EventsSection.module.css";
 
+interface EventFormData {
+  title: string;
+  description: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  location: string;
+  formData?: FormData;
+  existingImages?: string[];
+}
+
 export default function EventsSection() {
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [isCreating, setIsCreating] = useState(false);
-  
+
   const {
     events,
     loading,
     error,
-    createEvent,
+    saveEvent,
     deleteEvent,
-    updateEvent
+    refetch
   } = useEvents();
 
-  const handleCreateEvent = async (newEvent: Partial<Event>) => {
-    const success = await createEvent(newEvent);
-    if (success) {
-      setIsCreating(false);
+  const handleCreateEvent = async (data: EventFormData) => {
+    // Extract data from the new structure
+    if (data.formData) {
+      // New structure with FormData
+      const success = await saveEvent(
+        {
+          title: data.title,
+          description: data.description,
+          date: data.date,
+          startTime: data.startTime,
+          endTime: data.endTime,
+          location: data.location,
+        },
+        [], // files - will be handled by FormData
+        data.existingImages || [],
+        [],
+        undefined,
+        data.formData // Pass the FormData
+      );
+      if (success) {
+        setIsCreating(false);
+      }
+    } else {
+      // Legacy structure
+      const success = await saveEvent(data);
+      if (success) {
+        setIsCreating(false);
+      }
     }
   };
 
-  const handleEditEvent = async (updatedEvent: Partial<Event>) => {
+  const handleEditEvent = async (data: EventFormData) => {
     if (!editingEvent?.id) return;
-    const success = await updateEvent(editingEvent.id, updatedEvent);
-    if (success) {
-      setEditingEvent(null);
+    
+    if (data.formData) {
+      // New structure with FormData
+      const success = await saveEvent(
+        {
+          title: data.title,
+          description: data.description,
+          date: data.date,
+          startTime: data.startTime,
+          endTime: data.endTime,
+          location: data.location,
+        },
+        [], // files - will be handled by FormData
+        data.existingImages || [],
+        [],
+        editingEvent.id,
+        data.formData // Pass the FormData
+      );
+      if (success) {
+        setEditingEvent(null);
+      }
+    } else {
+      // Legacy structure
+      const success = await saveEvent(data, [], [], [], editingEvent.id);
+      if (success) {
+        setEditingEvent(null);
+      }
     }
-  };
-
-  return (
+  };  return (
     <div className={styles.container}>
       {error && (
         <div className={styles.errorContainer}>
