@@ -6,17 +6,18 @@ import { UpdateEventDto } from './dto/update-event.dto';
 
 describe('EventsController', () => {
   let controller: EventsController;
-  let service: EventsService;
 
   const mockEvent = {
-    id: 1,
+    id: 'uuid-string',
     title: 'Test Event',
-    shortDescription: 'Test Description',
-    category: 'Test Category',
-    description: 'Full Test Description',
-    imageUrl: 'test.jpg',
-    time: '10:00',
+    description: 'Test Description',
     date: '2024-03-20',
+    startTime: '10:00',
+    endTime: '12:00',
+    location: 'Test Location',
+    imageUrls: ['test.jpg'],
+    createdAt: new Date(),
+    updatedAt: new Date(),
   };
 
   const mockEventsService = {
@@ -39,28 +40,27 @@ describe('EventsController', () => {
     }).compile();
 
     controller = module.get<EventsController>(EventsController);
-    service = module.get<EventsService>(EventsService);
   });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('getAll', () => {
+  describe('findAll', () => {
     it('should return an array of events', async () => {
       mockEventsService.findAll.mockResolvedValue([mockEvent]);
-      const result = await controller.getAll();
+      const result = await controller.findAll();
       expect(result).toEqual([mockEvent]);
-      expect(service.findAll).toHaveBeenCalled();
+      expect(mockEventsService.findAll).toHaveBeenCalled();
     });
   });
 
-  describe('getOne', () => {
+  describe('findOne', () => {
     it('should return a single event', async () => {
       mockEventsService.findOne.mockResolvedValue(mockEvent);
-      const result = await controller.getOne(1);
+      const result = await controller.findOne('uuid-string');
       expect(result).toEqual(mockEvent);
-      expect(service.findOne).toHaveBeenCalledWith(1);
+      expect(mockEventsService.findOne).toHaveBeenCalledWith('uuid-string');
     });
   });
 
@@ -68,18 +68,22 @@ describe('EventsController', () => {
     it('should create and return a new event', async () => {
       const createDto: CreateEventDto = {
         title: 'New Event',
-        shortDescription: 'New Description',
-        category: 'New Category',
         description: 'Full New Description',
-        imageUrl: 'new.jpg',
-        time: '11:00',
         date: '2024-03-21',
+        startTime: '10:00',
+        endTime: '12:00',
+        location: 'Test Location',
       };
 
-      mockEventsService.create.mockResolvedValue({ id: 1, ...createDto });
-      const result = await controller.create(createDto);
-      expect(result).toEqual({ id: 1, ...createDto });
-      expect(service.create).toHaveBeenCalledWith(createDto);
+      const mockFiles = [];
+
+      mockEventsService.create.mockResolvedValue({ id: '1', ...createDto });
+      const result = await controller.create(createDto, mockFiles);
+      expect(result).toEqual({ id: '1', ...createDto });
+      expect(mockEventsService.create).toHaveBeenCalledWith(
+        createDto,
+        mockFiles,
+      );
     });
   });
 
@@ -87,19 +91,24 @@ describe('EventsController', () => {
     it('should update and return the event', async () => {
       const updateDto: UpdateEventDto = { title: 'Updated Title' };
       const updatedEvent = { ...mockEvent, ...updateDto };
+      const mockFiles = [];
 
       mockEventsService.update.mockResolvedValue(updatedEvent);
-      const result = await controller.update(1, updateDto);
+      const result = await controller.update('1', updateDto, mockFiles);
       expect(result).toEqual(updatedEvent);
-      expect(service.update).toHaveBeenCalledWith(1, updateDto);
+      expect(mockEventsService.update).toHaveBeenCalledWith(
+        '1',
+        updateDto,
+        mockFiles,
+      );
     });
   });
 
   describe('remove', () => {
     it('should remove the event', async () => {
       mockEventsService.remove.mockResolvedValue(undefined);
-      await controller.remove(1);
-      expect(service.remove).toHaveBeenCalledWith(1);
+      await controller.remove('1');
+      expect(mockEventsService.remove).toHaveBeenCalledWith('1');
     });
   });
 });
