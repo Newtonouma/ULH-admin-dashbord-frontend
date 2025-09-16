@@ -1,12 +1,25 @@
-import { IsString, IsNotEmpty, IsUrl } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsArray,
+  IsEnum,
+  IsOptional,
+} from 'class-validator';
 
 export class CreateGalleryDto {
   @IsString()
   @IsNotEmpty()
-  @IsUrl({}, { message: 'imageUrl must be a valid URL' })
-  imageUrl: string;
+  title: string;
 
   @IsString()
   @IsNotEmpty()
-  caption: string;
+  description: string;
+
+  @IsArray()
+  @IsOptional()
+  imageUrls?: string[];
+
+  @IsEnum(['photo', 'video'])
+  @IsOptional()
+  type?: 'photo' | 'video';
 }

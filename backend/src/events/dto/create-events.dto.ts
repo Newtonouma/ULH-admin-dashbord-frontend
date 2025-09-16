@@ -15,9 +15,16 @@ export class CreateEventDto {
 
   @IsString()
   @IsNotEmpty()
-  location: string;
+  startTime: string;
 
   @IsString()
+  @IsNotEmpty()
+  endTime: string;
+
+  @IsString()
+  @IsNotEmpty()
+  location: string;
+
   @IsOptional()
-  imageUrl?: string;
+  imageUrls?: string[];
 }

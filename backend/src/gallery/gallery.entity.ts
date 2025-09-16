@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity('gallery')
 export class Gallery {
@@ -6,10 +12,16 @@ export class Gallery {
   id: string;
 
   @Column()
-  imageUrl: string;
+  title: string;
 
   @Column({ nullable: true })
-  caption: string;
+  description: string;
+
+  @Column('text', { array: true, default: [] })
+  imageUrls: string[];
+
+  @Column({ default: 'photo' })
+  type: 'photo' | 'video';
 
   @CreateDateColumn()
   createdAt: Date;

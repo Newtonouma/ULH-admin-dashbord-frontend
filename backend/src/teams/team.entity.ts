@@ -17,8 +17,8 @@ export class Team {
   @Column('text')
   description: string;
 
-  @Column({ nullable: true })
-  imageUrl: string;
+  @Column('simple-array', { nullable: true })
+  imageUrls: string[];
 
   @Column({ nullable: true })
   contact?: string;

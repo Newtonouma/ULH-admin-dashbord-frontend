@@ -15,9 +15,8 @@ export class CreateTeamDto {
   @IsNotEmpty()
   description: string;
 
-  @IsString()
   @IsOptional()
-  imageUrl?: string;
+  imageUrls?: string[];
 
   @IsString()
   @IsOptional()

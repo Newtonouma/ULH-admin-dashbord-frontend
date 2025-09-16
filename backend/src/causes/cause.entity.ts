@@ -29,8 +29,8 @@ export class Cause {
   @Column({ type: 'decimal', default: 0, precision: 12, scale: 2 })
   raised: number;
 
-  @Column({ nullable: true })
-  imageUrl: string;
+  @Column('text', { array: true, default: [] })
+  imageUrls: string[];
 
   @OneToMany(() => Donation, (donation) => donation.cause)
   donations: Donation[];

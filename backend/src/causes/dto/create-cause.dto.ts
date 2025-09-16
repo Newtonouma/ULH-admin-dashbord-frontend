@@ -5,6 +5,7 @@ import {
   IsNumber,
   IsOptional,
   Min,
+  IsArray,
 } from 'class-validator';
 
 export class CreateCauseDto {
@@ -25,6 +26,7 @@ export class CreateCauseDto {
   description: string;
 
   @IsOptional()
-  @IsString()
-  imageUrl?: string;
+  @IsArray()
+  @IsString({ each: true })
+  imageUrls?: string[];
 }

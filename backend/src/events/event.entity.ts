@@ -11,14 +11,20 @@ export class Event {
   @Column('text')
   description: string;
 
-  @Column('timestamp')
+  @Column('date')
   date: Date;
+
+  @Column('time')
+  startTime: string;
+
+  @Column('time')
+  endTime: string;
 
   @Column()
   location: string;
 
-  @Column({ nullable: true })
-  imageUrl: string;
+  @Column('text', { array: true, default: [] })
+  imageUrls: string[];
 
   @CreateDateColumn()
   createdAt: Date;
